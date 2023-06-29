@@ -1,0 +1,95 @@
+---
+title: "Test replication of lipids association to BMI using ScreenDMT"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, include = FALSE)
+library(DirectionalMaxPTest)
+library(dplyr)
+library(rcompanion)
+library(readxl)
+
+zero.pct <- 0.2
+```
+
+In Matt Lynes' Nature Med paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified in physical units using standards.
+
+# M Bluher Nature Med OG 55
+
+```{r nm.read}
+# nm = Nature Med
+nm.pheno <- read.csv("data/NatureMed_fig1d.csv", check.names = FALSE) |> 
+  dplyr::rename(Biobank_ID = `Biobank ID`)
+nm.mat <- read.csv("data/NatureMed_lipidomics.csv", row.names = 1, check.names = FALSE) |> 
+  dplyr::select(nm.pheno$Biobank_ID)
+stopifnot(colnames(nm.mat) == nm.pheno$Biobank_ID)
+```
+
+We test Spearman correlation to BMI like original study.
+
+```{r nm.cor}
+# hist(rowMeans(nm.dat == 0))
+nm.mat <- nm.mat[rowMeans(nm.mat == 0) < zero.pct,] |> as.matrix()
+nm.tt <- ezlimma::ezcor(nm.mat, nm.pheno$BMI, method="spearman", prefix = "nm")
+# reproduce Matt's r from N Med letter
+stopifnot(signif(nm.tt["12,13-diHOME", "nm.rho"], digits = 3) == -0.531, signif(nm.tt["12,13-diHOME", "nm.p"], digits = 3) == 3e-05)
+```
+
+# M Bluher Study E
+
+```{r se.read}
+# se = Study E
+se.pheno <- read.csv("data/StudyE_sample_metadata.csv", check.names = FALSE) |> 
+  dplyr::select(!`Study group`)
+rownames(se.pheno) <- se.pheno$Sample_ID
+se.mat <- read.csv("data/StudyE_lipidomics.csv", row.names=1) |> as.matrix()
+stopifnot(colnames(se.mat) == se.pheno$Sample_ID)
+```
+
+The BMI has a gap in 30-40, so association to BMI is best tested as a group difference. Following the previous test, we use the nonparametric t-test (Mann-Whitney-Wilcoxon rank sum test). This test also a good choice here, because the lipids are not approximately normally distributed and there are zeroes, whose true value we don't know but it's reasonable to treat them as less than other values.
+
+## Test association of lipids to BMI
+
+```{r se.tt}
+se.mat <- se.mat[rowMeans(se.mat == 0) < zero.pct,]
+# use rank sum since non-normal but there's a distinct group difference
+se.tt <- t(apply(se.mat, 1, FUN=function(vv){
+  c(ob.med=median(vv[se.pheno$Group == "obesity"]),
+    lean_ow.med=median(vv[se.pheno$Group == "lean_ow"]),
+    se.z=wilcoxonZ(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])[["z"]],
+    se.p=wilcox.test(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])$p.value)
+}))
+stopifnot(se.tt["12,13-diHOME", "se.z"] == -3.08)
+stopifnot(se.tt["9,10-diHOME", "se.z"] == -3.07)
+# se.tt <- data.frame(se.tt) |> dplyr::mutate(se.diff=se.tt[, "ob.med"] - se.tt[, "lean_ow.med"], .before = se.p)
+```
+
+```{r repl1213}
+repl1213.p <- wilcox.test(se.mat["12,13-diHOME", se.pheno$Group == "obesity"], 
+                        se.mat["12,13-diHOME", se.pheno$Group == "lean_ow"], alternative = "less")$p.value
+stopifnot(signif(repl1213.p, 3) == 0.000927)
+```
+
+The 12,13-diHOME *one-sided* p-value in Study E with the rank sum test is 0.00093. Its z-score is ` r se.tt["12,13-diHOME", "se.z"]`. We now test if any of the other lipids replicated accounting for multiple testing.
+
+# ScreenDMT replication
+
+```{r repl}
+lipids.int <- setdiff(intersect(rownames(nm.tt), rownames(se.tt)), "12,13-diHOME")
+# no dplyr with rownames
+tab.int <- data.frame(nm.tt[lipids.int, 1:2], se.tt[lipids.int, 3:4])
+tab.sdmt <- screendmt(tab=tab.int, reorder.rows = TRUE, prefix = "sdmt")
+
+tab.sdmt$dmt.FDR <- p.adjust(tab.sdmt$sdmt.p, method="BH")
+
+write.csv(tab.sdmt, "results/bluher_lipid_replication.csv")
+```
+
+For comparison, we include FDRs using the directional MaxP test. The table of results is at [bluher_lipid_replication.csv](results/bluher_lipid_replication.csv). We examine 9,10-diHOME in Study E and find that its z-score is `r se.tt["9,10-diHOME", "se.z"]`.
+
+# R session
+```{r, include=TRUE}
+pander::pander(sessionInfo())
+```

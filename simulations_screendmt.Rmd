@@ -1,0 +1,135 @@
+---
+title: "Simulation power + FDR/FWER of novel method"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(reshape2)
+library(patchwork)
+library(Rcpp)
+library(RcppArmadillo)
+library(zeallot)
+library(repfdr)
+# remotes::install_github("jingshuw/adaFilter")
+library(adaFilter)
+# BiocManager::install("limma")
+library(limma)
+# remotes::install_github("jdreyf/DirectionalMaxPTest")
+library(DirectionalMaxPTest)
+# remotes::install_github("shay-y/radjust")
+library(radjust)
+
+source("R/mvrnormArma_rcpp.R")
+source("R/safe_repfdr.R")
+source("R/sim_mu_vctrs.R")
+source("R/SimFDR.R")
+source("R/SimFWER.R")
+source("R/sim_ggplot.R")
+```
+
+# Simulations
+
+We simulate ScreenDMT vs. competitors in different settings to compare false positive rates and power. These simulations are analogous to Vera's Biometrical Journal paper Figure 3.
+
+```{r 4sim}
+# i want to focus on low pi1, since that's common
+pi1.v <- c(0, 0.01*2**(0:5))
+pi2 <- 0.05
+# m.v <- c(200, 10**3)
+m <- m.v <- 10**3
+fac.v <- 1:2
+rho <- 0.5
+nblock.v <- c(10, 100)
+alpha <- 0.05
+B <- 10^3
+mu <- 3.5
+```
+
+## Sim FDR 
+
+```{r simfdr, include=FALSE, eval=FALSE}
+meth.v <- c("Pearson", "DMT", "ScreenDMT", "radjust_sym", "AF", "repfdr")
+type.v <- c("FDR", "power")
+
+pwr_fdr_arr.dnms <- list(paste0("pi1_", pi1.v), paste0("m_", m.v), paste0("fac_", fac.v), type.v, meth.v, paste0("nb_", nblock.v))
+pwr_fdr_arr <- array(dim = sapply(pwr_fdr_arr.dnms, length), dimnames = pwr_fdr_arr.dnms)
+
+print(Sys.time())
+for (nb in nblock.v){
+  for (pi1 in pi1.v){
+    pi0 <- 1 - pi2 - pi1
+    for (m in m.v){
+      for (fac in fac.v){
+        pwr_fdr_arr[paste0("pi1_", pi1), paste0("m_", m), paste0("fac_", fac), type.v, meth.v, paste0("nb_", nb)] <- 
+        SimFDR(mu = mu, pi0 = pi0, pi1 = pi1, pi2 = pi2, alpha = alpha, m = m, B = B, fac=fac, nblocks = nb, rho = rho, meth.v=meth.v)
+        
+        stopifnot(!is.na(pwr_fdr_arr[paste0("pi1_", pi1), paste0("m_", m), paste0("fac_", fac), type.v, meth.v, paste0("nb_", nb)]))
+      }
+      cat("\n m:", m, "done \n\n")
+    }
+    cat("\n pi1:", pi1, "done \n\n")
+  }
+  cat("\n nb:", nb, "done \n\n")
+  print(Sys.time())
+}
+
+stopifnot(length(m.v) == 1)
+saveRDS(pwr_fdr_arr, file=paste0("results/pwr_fdr_arr_b", B, "_m", m.v, "_mu", mu, "_logpi1.RDS"))
+```
+
+We simulate the various settings and capture power and FDR in multi-dimensional array, where each dimension is a parameter we vary e.g. "pi1", stored at `r paste0("results/pwr_fdr_arr_b", B, "_m", m.v, "_mu", mu, "_logpi1.RDS")`.
+
+## Sim FWER 
+
+```{r simfwer, include=FALSE, eval=FALSE}
+meth.v <- c("Pearson", "DMT", "ScreenDMT", "AF")
+type.v <- c("FWER", "power")
+
+pwr_fwer_arr.dnms <- list(paste0("pi1_", pi1.v), paste0("m_", m.v), paste0("fac_", fac.v), type.v, meth.v, paste0("nb_", nblock.v))
+pwr_fwer_arr <- array(dim = sapply(pwr_fwer_arr.dnms, length), dimnames = pwr_fwer_arr.dnms)
+
+print(Sys.time())
+for (nb in nblock.v){
+  for (pi1 in pi1.v){
+    pi0 <- 1 - pi2 - pi1
+    for (m in m.v){
+      for (fac in fac.v){
+        pwr_fwer_arr[paste0("pi1_", pi1), paste0("m_", m), paste0("fac_", fac), type.v, meth.v, paste0("nb_", nb)] <- 
+        SimFWER(mu = mu, pi0 = pi0, pi1 = pi1, pi2 = pi2, alpha = alpha, m = m, B = B, fac=fac, nblocks = nb, rho = rho, meth.v=meth.v)
+      }
+      cat("\n m:", m, "done \n\n")
+    }
+    cat("\n pi1:", pi1, "done \n\n")
+  }
+  cat("\n nb:", nb, "done \n\n")
+  print(Sys.time())
+}
+
+stopifnot(length(m.v) == 1)
+saveRDS(pwr_fwer_arr, file=paste0("results/pwr_fwer_arr_b", B, "_m", m,  "_mu", mu, "_logpi1.RDS"))
+```
+
+We simulate the various settings and capture power and FWER in `r paste0("results/pwr_fwer_arr_b", B, "_m", m,  "_mu", mu, "_logpi1.RDS")`.
+
+# Plots
+
+```{r ggplot}
+for (type1 in c("fdr", "fwer")){
+  pwr_arr <- readRDS(paste0("results/pwr_", type1, "_arr_b", B, "_m", m, "_mu", mu, "_logpi1.RDS"))
+  ggp.lst <- sim_ggplot(pwr_arr)
+  ggp2 <- ggp.lst[[1]] / ggp.lst[[2]]
+  ggsave(paste0("results/ggsim_b", B, "_m", m, "_mu", mu, "_", type1, ".pdf"), plot = ggp2, width=7, height=10)
+}
+```
+
+We plot the power and FDR at `r paste0("results/ggsim_b", B, "_m", m, "_mu", mu, "_fdr.pdf")` and power and FWER at `r paste0("results/ggsim_b", B, "_m", m, "_mu", mu, "_fwer.pdf")`.
+
+# R session
+```{r, include=TRUE}
+pander::pander(sessionInfo())
+```
