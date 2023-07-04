@@ -72,7 +72,7 @@ repl1213.p <- wilcox.test(se.mat["12,13-diHOME", se.pheno$Group == "obesity"],
 stopifnot(signif(repl1213.p, 3) == 0.000927)
 ```
 
-The 12,13-diHOME *one-sided* p-value in Study E with the rank sum test is 0.00093. Its z-score is ` r se.tt["12,13-diHOME", "se.z"]`. We now test if any of the other lipids replicated accounting for multiple testing.
+The 12,13-diHOME *one-sided* p-value in Study E with the rank sum test is 0.00093. Its z-score is `r se.tt["12,13-diHOME", "se.z"]`. We now test if any of the other lipids replicated accounting for multiple testing.
 
 # ScreenDMT replication
 
