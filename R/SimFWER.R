@@ -27,7 +27,7 @@ SimFWER <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nb
   Sigma <- kronecker(X=diag(x = nblocks), Y=sigma.tmp)
   
   # true and false hypotheses
-  TH <- mu1*mu2 == 0
+  TH <- mu1*mu2 <= 0
   FH <- !TH
   # stopifnot(sum(FH) == m2)
   

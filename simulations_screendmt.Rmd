@@ -40,13 +40,14 @@ We simulate ScreenDMT vs. competitors in different settings to compare false pos
 # i want to focus on low pi1, since that's common
 pi1.v <- c(0, 0.01*2**(0:5))
 pi2 <- 0.05
+# i get repfdr error that pi0theo is missing when m <= 200
 # m.v <- c(200, 10**3)
-m <- m.v <- 10**3
+m <- m.v <- 1000
 fac.v <- 1:2
 rho <- 0.5
 nblock.v <- c(10, 100)
 alpha <- 0.05
-B <- 10^3
+B <- 30
 mu <- 3.5
 ```
 
