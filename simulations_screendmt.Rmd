@@ -47,13 +47,13 @@ fac.v <- 1:2
 rho <- 0.5
 nblock.v <- c(10, 100)
 alpha <- 0.05
-B <- 30
+B <- 10**3
 mu <- 3.5
 ```
 
 ## Sim FDR 
 
-```{r simfdr, include=FALSE, eval=FALSE}
+```{r simfdr, include=FALSE, eval=TRUE}
 meth.v <- c("Pearson", "DMT", "ScreenDMT", "radjust_sym", "AF", "repfdr")
 type.v <- c("FDR", "power")
 
@@ -87,7 +87,7 @@ We simulate the various settings and capture power and FDR in multi-dimensional 
 
 ## Sim FWER 
 
-```{r simfwer, include=FALSE, eval=FALSE}
+```{r simfwer, include=FALSE, eval=TRUE}
 meth.v <- c("Pearson", "DMT", "ScreenDMT", "AF")
 type.v <- c("FWER", "power")
 
