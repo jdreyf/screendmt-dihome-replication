@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-07-02" />
+<meta name="date" content="2023-07-10" />
 
 <title>Test replication of lipids association to BMI using ScreenDMT</title>
 
@@ -351,25 +351,25 @@ display: none;
 
 <h1 class="title toc-ignore">Test replication of lipids association to
 BMI using ScreenDMT</h1>
-<h4 class="date">2023-07-02</h4>
+<h4 class="date">2023-07-10</h4>
 
 </div>
 
 
-<p>In Matt Lynes’ Nature Med paper, he identified 12,13-diHOME, so to
-replicate that we only need p&lt;0.05. We test replication of
+<p>In Matt Lynes’ Nature Medicne paper, he identified 12,13-diHOME, so
+to replicate that we only need p&lt;0.05. We test replication of
 association to BMI for other lipids using ScreenDMT and find 9,10-diHOME
 also replicates. In our lipidomics processing, we only keep lipids that
 have at least 80% non-zeroes in both studies (the results are not
 sensitive to this). We do not need to normalize the lipidomics data,
 because the abundances are quantified in physical units using
 standards.</p>
-<div id="m-bluher-nature-med-og-55" class="section level1">
-<h1>M Bluher Nature Med OG 55</h1>
+<div id="cohort-published-by-lynes-et-al.-in-nature-medicine" class="section level1">
+<h1>Cohort published by Lynes et al. in Nature Medicine</h1>
 <p>We test Spearman correlation to BMI like original study.</p>
 </div>
-<div id="m-bluher-study-e" class="section level1">
-<h1>M Bluher Study E</h1>
+<div id="new-cohort" class="section level1">
+<h1>New cohort</h1>
 <p>The BMI has a gap in 30-40, so association to BMI is best tested as a
 group difference. Following the previous test, we use the nonparametric
 t-test (Mann-Whitney-Wilcoxon rank sum test). This test also a good
@@ -378,16 +378,16 @@ distributed and there are zeroes, whose true value we don’t know but
 it’s reasonable to treat them as less than other values.</p>
 <div id="test-association-of-lipids-to-bmi" class="section level2">
 <h2>Test association of lipids to BMI</h2>
-<p>The 12,13-diHOME <em>one-sided</em> p-value in Study E with the rank
-sum test is 0.00093. Its z-score is -3.08. We now test if any of the
-other lipids replicated accounting for multiple testing.</p>
+<p>The 12,13-diHOME <em>one-sided</em> p-value in new cohort with the
+rank sum test is 0.00093. Its z-score is -3.08. We now test if any of
+the other lipids replicated accounting for multiple testing.</p>
 </div>
 </div>
 <div id="screendmt-replication" class="section level1">
 <h1>ScreenDMT replication</h1>
 <p>For comparison, we include FDRs using the directional MaxP test. The
 table of results is at <a href="results/bluher_lipid_replication.csv">bluher_lipid_replication.csv</a>.
-We examine 9,10-diHOME in Study E and find that its z-score is
+We examine 9,10-diHOME in the new cohort and find that its z-score is
 -3.07.</p>
 </div>
 <div id="r-session" class="section level1">

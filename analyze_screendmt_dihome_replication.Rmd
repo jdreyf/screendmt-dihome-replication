@@ -14,9 +14,9 @@ library(readxl)
 zero.pct <- 0.2
 ```
 
-In Matt Lynes' Nature Med paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified in physical units using standards.
+In Matt Lynes' Nature Medicne paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified in physical units using standards.
 
-# M Bluher Nature Med OG 55
+# Cohort published by Lynes et al. in Nature Medicine
 
 ```{r nm.read}
 # nm = Nature Med
@@ -37,7 +37,7 @@ nm.tt <- ezlimma::ezcor(nm.mat, nm.pheno$BMI, method="spearman", prefix = "nm")
 stopifnot(signif(nm.tt["12,13-diHOME", "nm.rho"], digits = 3) == -0.531, signif(nm.tt["12,13-diHOME", "nm.p"], digits = 3) == 3e-05)
 ```
 
-# M Bluher Study E
+# New cohort
 
 ```{r se.read}
 # se = Study E
@@ -72,7 +72,7 @@ repl1213.p <- wilcox.test(se.mat["12,13-diHOME", se.pheno$Group == "obesity"],
 stopifnot(signif(repl1213.p, 3) == 0.000927)
 ```
 
-The 12,13-diHOME *one-sided* p-value in Study E with the rank sum test is 0.00093. Its z-score is `r se.tt["12,13-diHOME", "se.z"]`. We now test if any of the other lipids replicated accounting for multiple testing.
+The 12,13-diHOME *one-sided* p-value in new cohort with the rank sum test is 0.00093. Its z-score is `r se.tt["12,13-diHOME", "se.z"]`. We now test if any of the other lipids replicated accounting for multiple testing.
 
 # ScreenDMT replication
 
@@ -87,7 +87,7 @@ tab.sdmt$dmt.FDR <- p.adjust(tab.sdmt$sdmt.p, method="BH")
 write.csv(tab.sdmt, "results/bluher_lipid_replication.csv")
 ```
 
-For comparison, we include FDRs using the directional MaxP test. The table of results is at [bluher_lipid_replication.csv](results/bluher_lipid_replication.csv). We examine 9,10-diHOME in Study E and find that its z-score is `r se.tt["9,10-diHOME", "se.z"]`.
+For comparison, we include FDRs using the directional MaxP test. The table of results is at [bluher_lipid_replication.csv](results/bluher_lipid_replication.csv). We examine 9,10-diHOME in the new cohort and find that its z-score is `r se.tt["9,10-diHOME", "se.z"]`.
 
 # R session
 ```{r, include=TRUE}
