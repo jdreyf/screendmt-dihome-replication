@@ -14,7 +14,7 @@ library(readxl)
 zero.pct <- 0.2
 ```
 
-In Matt Lynes' Nature Medicne paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified in physical units using standards.
+In Matt Lynes' Nature Medicne paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified using standards.
 
 # Cohort published by Lynes et al. in Nature Medicine
 
