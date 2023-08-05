@@ -6,10 +6,10 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, include = FALSE)
-library(DirectionalMaxPTest)
 library(dplyr)
+library(ezlimma)
+library(DirectionalMaxPTest)
 library(rcompanion)
-library(readxl)
 
 zero.pct <- 0.2
 ```
@@ -58,7 +58,7 @@ se.mat <- se.mat[rowMeans(se.mat == 0) < zero.pct,]
 se.tt <- t(apply(se.mat, 1, FUN=function(vv){
   c(ob.med=median(vv[se.pheno$Group == "obesity"]),
     lean_ow.med=median(vv[se.pheno$Group == "lean_ow"]),
-    se.z=wilcoxonZ(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])[["z"]],
+    se.z=rcompanion::wilcoxonZ(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])[["z"]],
     se.p=wilcox.test(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])$p.value)
 }))
 stopifnot(se.tt["12,13-diHOME", "se.z"] == -3.08)
@@ -80,7 +80,7 @@ The 12,13-diHOME *one-sided* p-value in new cohort with the rank sum test is 0.0
 lipids.int <- setdiff(intersect(rownames(nm.tt), rownames(se.tt)), "12,13-diHOME")
 # no dplyr with rownames
 tab.int <- data.frame(nm.tt[lipids.int, 1:2], se.tt[lipids.int, 3:4])
-tab.sdmt <- screendmt(tab=tab.int, reorder.rows = TRUE, prefix = "sdmt")
+tab.sdmt <- DirectionalMaxPTest::screendmt(tab=tab.int, reorder.rows = TRUE, prefix = "sdmt")
 
 tab.sdmt$dmt.FDR <- p.adjust(tab.sdmt$sdmt.p, method="BH")
 
