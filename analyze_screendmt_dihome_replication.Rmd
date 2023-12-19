@@ -58,13 +58,16 @@ se.mat <- se.mat[rowMeans(se.mat == 0) < zero.pct,]
 se.tt <- t(apply(se.mat, 1, FUN=function(vv){
   c(ob.med=median(vv[se.pheno$Group == "obesity"]),
     lean_ow.med=median(vv[se.pheno$Group == "lean_ow"]),
-    se.z=rcompanion::wilcoxonZ(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])[["z"]],
-    se.p=wilcox.test(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])$p.value)
+    new_cohort.z=rcompanion::wilcoxonZ(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])[["z"]],
+    new_cohort.p=wilcox.test(x=vv[se.pheno$Group == "obesity"], y=vv[se.pheno$Group == "lean_ow"])$p.value)
 }))
-stopifnot(se.tt["12,13-diHOME", "se.z"] == -3.08)
-stopifnot(se.tt["9,10-diHOME", "se.z"] == -3.07)
-# se.tt <- data.frame(se.tt) |> dplyr::mutate(se.diff=se.tt[, "ob.med"] - se.tt[, "lean_ow.med"], .before = se.p)
+stopifnot(se.tt["12,13-diHOME", "new_cohort.z"] == -3.08)
+stopifnot(se.tt["9,10-diHOME", "new_cohort.z"] == -3.07)
+data.frame(se.tt) |> dplyr::arrange(new_cohort.p) |> 
+  write.csv("results/new_cohort_stats.csv")
 ```
+
+We write out the lipidomic results of the new cohort to [new_cohort_stats.csv](./results/new_cohort_stats.csv), which contains the median value per group, z-score, and p-value per lipid.
 
 ```{r repl1213}
 repl1213.p <- wilcox.test(se.mat["12,13-diHOME", se.pheno$Group == "obesity"], 
@@ -72,7 +75,7 @@ repl1213.p <- wilcox.test(se.mat["12,13-diHOME", se.pheno$Group == "obesity"],
 stopifnot(signif(repl1213.p, 3) == 0.000927)
 ```
 
-The 12,13-diHOME *one-sided* p-value in new cohort with the rank sum test is 0.00093. Its z-score is `r se.tt["12,13-diHOME", "se.z"]`. We now test if any of the other lipids replicated accounting for multiple testing.
+The 12,13-diHOME *one-sided* p-value in new cohort with the rank sum test is 0.00093. Its z-score is `r se.tt["12,13-diHOME", "new_cohort.z"]`. We now test if any of the other lipids replicated accounting for multiple testing.
 
 # ScreenDMT replication
 
@@ -87,7 +90,7 @@ tab.sdmt$dmt.FDR <- p.adjust(tab.sdmt$sdmt.p, method="BH")
 write.csv(tab.sdmt, "results/bluher_lipid_replication.csv")
 ```
 
-For comparison, we include FDRs using the directional MaxP test. The table of results is at [bluher_lipid_replication.csv](results/bluher_lipid_replication.csv). We examine 9,10-diHOME in the new cohort and find that its z-score is `r se.tt["9,10-diHOME", "se.z"]`.
+For comparison, we include FDRs using the directional MaxP test. The table of results is at [bluher_lipid_replication.csv](results/bluher_lipid_replication.csv). We examine 9,10-diHOME in the new cohort and find that its z-score is `r se.tt["9,10-diHOME", "new_cohort.z"]`.
 
 # R session
 ```{r, include=TRUE}
