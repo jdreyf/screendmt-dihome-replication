@@ -6,7 +6,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, include = FALSE)
-library(dplyr)
+library(tidyverse)
+library(magrittr)
 library(ezlimma)
 library(DirectionalMaxPTest)
 library(rcompanion)
@@ -14,7 +15,7 @@ library(rcompanion)
 zero.pct <- 0.2
 ```
 
-In Matt Lynes' Nature Medicne paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified using standards.
+In Matt Lynes' Nature Medicne paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified using internal standards.
 
 # Cohort published by Lynes et al. in Nature Medicine
 
@@ -91,6 +92,35 @@ write.csv(tab.sdmt, "results/bluher_lipid_replication.csv")
 ```
 
 For comparison, we include FDRs using the directional MaxP test. The table of results is at [bluher_lipid_replication.csv](results/bluher_lipid_replication.csv). We examine 9,10-diHOME in the new cohort and find that its z-score is `r se.tt["9,10-diHOME", "new_cohort.z"]`.
+
+# Plot diHOMEs against BMI in both studies
+
+```{r ggp}
+dihomes <- c("9,10-diHOME", "12,13-diHOME")
+dta <- dplyr::bind_rows(data.frame(Study = "Study 1", BMI = rep(nm.pheno$BMI, times=2), dihome = rep(dihomes, each=nrow(nm.pheno)), 
+                            value = c(nm.mat["9,10-diHOME",], nm.mat["12,13-diHOME",])),
+                 data.frame(Study = "Study 2", BMI = rep(se.pheno$BMI, times=2), dihome = rep(dihomes, each=nrow(se.pheno)), 
+                            value = c(se.mat["9,10-diHOME",], se.mat["12,13-diHOME",]))) %>%
+  dplyr::mutate(dihome = factor(dihome, levels = dihomes, ordered = TRUE)) %>%
+  dplyr::mutate(value = case_when(value > 5 ~ sort(value, decreasing = TRUE)[3], .default = value))
+
+med.df <- dta %>% dplyr::filter(Study == "Study 2") %>%
+  dplyr::mutate(x1 = case_when(BMI <= 30 ~ 20, BMI >= 40 ~ 40)) %>%
+  dplyr::summarize(med = median(value), .by = c(Study, dihome, x1))
+
+stat.df <- rbind(nm.tt[dihomes, 1:2], se.tt[dihomes, 3:4]) %>% 
+  as.data.frame(check.names  = FALSE) %>%
+  dplyr::select(!ends_with("p")) %>%
+  dplyr::rename(score = nm.rho) %>%
+  dplyr::mutate(Study = rep(c("Study 1", "Study 2"), each=2), dihome = rep(dihomes, times=2), BMI=60, value=rep(4:3, times=2), .before = score)
+
+ggplot(dta, mapping = aes(BMI, value)) + geom_point(alpha = I(0.5)) + facet_grid(dihome ~ Study, scales = "free_y") + theme_bw() +
+  labs(x=expression(BMI~(kg/m^2)), y=expression(Log[2]~abundance~(A.U.))) + 
+  geom_smooth(data = dta %>% dplyr::filter(Study == "Study 1"), method="lm", formula = y~x, se=FALSE, color = "red") + 
+  geom_segment(data=med.df, mapping = aes(x = x1, xend=x1+10, y=med, yend=med), color="red", linewidth=1.5)
+```
+
+We plot the diHOMEs against BMI in both studies and for improved visualization we windsorize (or trim) 9,10-diHOME values 
 
 # R session
 ```{r, include=TRUE}
