@@ -101,26 +101,31 @@ dta <- dplyr::bind_rows(data.frame(Study = "Study 1", BMI = rep(nm.pheno$BMI, ti
                             value = c(nm.mat["9,10-diHOME",], nm.mat["12,13-diHOME",])),
                  data.frame(Study = "Study 2", BMI = rep(se.pheno$BMI, times=2), dihome = rep(dihomes, each=nrow(se.pheno)), 
                             value = c(se.mat["9,10-diHOME",], se.mat["12,13-diHOME",]))) %>%
-  dplyr::mutate(dihome = factor(dihome, levels = dihomes, ordered = TRUE)) %>%
-  dplyr::mutate(value = case_when(value > 5 ~ sort(value, decreasing = TRUE)[3], .default = value))
+  dplyr::mutate(dihome = factor(dihome, levels = dihomes, ordered = TRUE))
+q99 <- dta %>% dplyr::filter(dihome == "9,10-diHOME") %>% summarize(quantile(x=value, probs = 0.99)) %>% dplyr::pull(1)
+dta %<>% dplyr::mutate(value = case_when(value > q99 ~ q99, .default = value))
 
 med.df <- dta %>% dplyr::filter(Study == "Study 2") %>%
   dplyr::mutate(x1 = case_when(BMI <= 30 ~ 20, BMI >= 40 ~ 40)) %>%
   dplyr::summarize(med = median(value), .by = c(Study, dihome, x1))
 
 stat.df <- rbind(nm.tt[dihomes, 1:2], se.tt[dihomes, 3:4]) %>% 
-  as.data.frame(check.names  = FALSE) %>%
+  as.data.frame(check.names = FALSE) %>%
   dplyr::select(!ends_with("p")) %>%
   dplyr::rename(score = nm.rho) %>%
-  dplyr::mutate(Study = rep(c("Study 1", "Study 2"), each=2), dihome = rep(dihomes, times=2), BMI=60, value=rep(4:3, times=2), .before = score)
+  dplyr::mutate(Study = rep(c("Study 1", "Study 2"), each=2), dihome = rep(dihomes, times=2), BMI=60, value=rep(4:3, times=2), .before = score) %>%
+  dplyr::mutate(score = round(score, digits = 2))
 
+# rho = \u03c1 in unicode
 ggplot(dta, mapping = aes(BMI, value)) + geom_point(alpha = I(0.5)) + facet_grid(dihome ~ Study, scales = "free_y") + theme_bw() +
   labs(x=expression(BMI~(kg/m^2)), y=expression(Log[2]~abundance~(A.U.))) + 
   geom_smooth(data = dta %>% dplyr::filter(Study == "Study 1"), method="lm", formula = y~x, se=FALSE, color = "red") + 
-  geom_segment(data=med.df, mapping = aes(x = x1, xend=x1+10, y=med, yend=med), color="red", linewidth=1.5)
+  geom_segment(data=med.df, mapping = aes(x = x1, xend=x1+10, y=med, yend=med), color="red", linewidth=1.5) + 
+  geom_label(data = stat.df, mapping = aes(label = paste(case_when(Study == "Study 2" ~ "z", .default = "\u03c1"), "=", score)))
+ggsave("results/dihomes_vs_bmi.pdf", width=7, height=7, device = cairo_pdf)
 ```
 
-We plot the diHOMEs against BMI in both studies and for improved visualization we windsorize (or trim) 9,10-diHOME values 
+We plot the diHOMEs against BMI in both studies and for improved visualization we windsorize (or clip) 9,10-diHOME values above the 99th percentile to the 99th percentile.
 
 # R session
 ```{r, include=TRUE}
