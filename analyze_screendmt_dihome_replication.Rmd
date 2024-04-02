@@ -127,6 +127,33 @@ ggsave("results/dihomes_vs_bmi.pdf", width=7, height=7, device = cairo_pdf)
 
 We plot the diHOMEs against BMI in both studies and for improved visualization we windsorize (or clip) 9,10-diHOME values above the 99th percentile to the 99th percentile.
 
+# Test sets of lipids by parent lipid
+
+```{r pwys}
+lipid.set.map <- read_csv("data/parent_lipid_map.csv", show_col_types = FALSE)
+tab.pwys <- data.frame(tab.sdmt %>% dplyr::select(sdmt.p), new_cohort.z = se.tt[rownames(tab.sdmt), "new_cohort.z"]) %>%
+  tibble::rownames_to_column("Lipid") %>%
+  bind_rows(data.frame(Lipid = "12,13-diHOME", sdmt.p = 0.000927, new_cohort.z = -3.08)) %>%
+  dplyr::inner_join(lipid.set.map, by = "Lipid") %>%
+  dplyr::arrange(sdmt.p)
+
+parent.lipids <- unique(tab.pwys$Parent_lipid)
+pa.lip.stats <- data.frame(Parent_lipid = parent.lipids, p = numeric(6), FDR = numeric(6))
+rownames(pa.lip.stats) <- pa.lip.stats$Parent_lipid
+for (pali.tmp in parent.lipids){
+  pa.lip.stats[pali.tmp, "p"] <- fisher.test(table(tab.pwys$Parent_lipid != pali.tmp, tab.pwys$sdmt.p > 0.05), alternative = "greater")$p.value
+}
+pa.lip.stats$FDR <- p.adjust(pa.lip.stats$p, method="BH")
+pa.lip.stats %>% dplyr::arrange(p) %>% 
+  write_csv("results/lipid_set_enrichment_stats.csv")
+
+# all of these are negatively associated with BMI in both studies
+stopifnot(tab.pwys %>% dplyr::filter(Parent_lipid == "Linoleic Acid") %>% dplyr::pull(sdmt.p) < 0.5)
+stopifnot(tab.pwys %>% dplyr::filter(Parent_lipid == "Linoleic Acid") %>% dplyr::pull(new_cohort.z) < 0)
+```
+
+We test each lipid set defined by its parent lipid in Figure 3 for enrichment by testing over-representation of lipids with a replication p-value below 5% using the usual  one-sided Fisher exact test and then adjusting for the number of lipid sets tested using the Benjamini-Hochberg FDR procedure. The table of results is at [lipid_set_enrichment_stats.csv](results/lipid_set_enrichment_stats.csv).
+
 # R session
 ```{r, include=TRUE}
 pander::pander(sessionInfo())

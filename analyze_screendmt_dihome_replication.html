@@ -10,7 +10,7 @@
 
 
 
-<meta name="date" content="2023-12-19" />
+<meta name="date" content="2024-04-02" />
 
 <title>Test replication of lipids association to BMI using ScreenDMT</title>
 
@@ -351,7 +351,7 @@ display: none;
 
 <h1 class="title toc-ignore">Test replication of lipids association to
 BMI using ScreenDMT</h1>
-<h4 class="date">2023-12-19</h4>
+<h4 class="date">2024-04-02</h4>
 
 </div>
 
@@ -362,7 +362,7 @@ association to BMI for other lipids using ScreenDMT and find 9,10-diHOME
 also replicates. In our lipidomics processing, we only keep lipids that
 have at least 80% non-zeroes in both studies (the results are not
 sensitive to this). We do not need to normalize the lipidomics data,
-because the abundances are quantified using standards.</p>
+because the abundances are quantified using internal standards.</p>
 <div id="cohort-published-by-lynes-et-al.-in-nature-medicine" class="section level1">
 <h1>Cohort published by Lynes et al. in Nature Medicine</h1>
 <p>We test Spearman correlation to BMI like original study.</p>
@@ -391,6 +391,20 @@ table of results is at <a href="results/bluher_lipid_replication.csv">bluher_lip
 We examine 9,10-diHOME in the new cohort and find that its z-score is
 -3.07.</p>
 </div>
+<div id="plot-dihomes-against-bmi-in-both-studies" class="section level1">
+<h1>Plot diHOMEs against BMI in both studies</h1>
+<p>We plot the diHOMEs against BMI in both studies and for improved
+visualization we windsorize (or clip) 9,10-diHOME values above the 99th
+percentile to the 99th percentile.</p>
+</div>
+<div id="test-sets-of-lipids-by-parent-lipid" class="section level1">
+<h1>Test sets of lipids by parent lipid</h1>
+<p>We test each lipid set defined by its parent lipid in Figure 3 for
+enrichment by testing over-representation of lipids with a replication
+p-value below 5% using the usual one-sided Fisher exact test and then
+adjusting for the number of lipid sets tested using the
+Benjamini-Hochberg FDR procedure. The table of results is at <a href="results/lipid_set_enrichment_stats.csv">lipid_set_enrichment_stats.csv</a>.</p>
+</div>
 <div id="r-session" class="section level1">
 <h1>R session</h1>
 <p><strong>R version 4.3.1 (2023-06-16 ucrt)</strong></p>
@@ -405,42 +419,53 @@ and <em>LC_TIME=English_United States.utf8</em></p>
 <p><strong>other attached packages:</strong>
 <em>rcompanion(v.2.4.34)</em>,
 <em>DirectionalMaxPTest(v.0.0.1.9000)</em>,
-<em>ezlimma(v.0.2.5.9007)</em> and <em>dplyr(v.1.1.2)</em></p>
+<em>ezlimma(v.0.2.5.9010)</em>, <em>magrittr(v.2.0.3)</em>,
+<em>lubridate(v.1.9.3)</em>, <em>forcats(v.1.0.0)</em>,
+<em>stringr(v.1.5.0)</em>, <em>dplyr(v.1.1.2)</em>,
+<em>purrr(v.1.0.1)</em>, <em>readr(v.2.1.4)</em>,
+<em>tidyr(v.1.3.0)</em>, <em>tibble(v.3.2.1)</em>,
+<em>ggplot2(v.3.5.0)</em> and <em>tidyverse(v.2.0.0)</em></p>
 <p><strong>loaded via a namespace (and not attached):</strong>
-<em>gld(v.2.6.6)</em>, <em>xfun(v.0.39)</em>, <em>bslib(v.0.5.1)</em>,
-<em>coin(v.1.4-3)</em>, <em>lattice(v.0.21-9)</em>,
-<em>vctrs(v.0.6.3)</em>, <em>tools(v.4.3.1)</em>,
-<em>generics(v.0.1.3)</em>, <em>stats4(v.4.3.1)</em>,
-<em>parallel(v.4.3.1)</em>, <em>sandwich(v.3.0-2)</em>,
-<em>tibble(v.3.2.1)</em>, <em>proxy(v.0.4-27)</em>,
-<em>fansi(v.1.0.4)</em>, <em>pkgconfig(v.2.0.3)</em>,
-<em>Matrix(v.1.6-3)</em>, <em>data.table(v.1.14.8)</em>,
-<em>readxl(v.1.4.3)</em>, <em>lifecycle(v.1.0.3)</em>,
-<em>rootSolve(v.1.8.2.4)</em>, <em>compiler(v.4.3.1)</em>,
-<em>Exact(v.3.2)</em>, <em>codetools(v.0.2-19)</em>,
-<em>htmltools(v.0.5.5)</em>, <em>DescTools(v.0.99.50)</em>,
-<em>class(v.7.3-22)</em>, <em>sass(v.0.4.7)</em>,
-<em>yaml(v.2.3.7)</em>, <em>pillar(v.1.9.0)</em>,
-<em>jquerylib(v.0.1.4)</em>, <em>MASS(v.7.3-60)</em>,
-<em>cachem(v.1.0.8)</em>, <em>boot(v.1.3-28.1)</em>,
-<em>multcomp(v.1.4-25)</em>, <em>tidyselect(v.1.2.0)</em>,
-<em>digest(v.0.6.33)</em>, <em>nortest(v.1.0-4)</em>,
-<em>mvtnorm(v.1.2-3)</em>, <em>pander(v.0.6.5)</em>,
-<em>splines(v.4.3.1)</em>, <em>fastmap(v.1.1.1)</em>,
-<em>grid(v.4.3.1)</em>, <em>lmom(v.3.0)</em>, <em>expm(v.0.999-7)</em>,
-<em>cli(v.3.6.1)</em>, <em>magrittr(v.2.0.3)</em>,
-<em>survival(v.3.5-7)</em>, <em>utf8(v.1.2.3)</em>,
-<em>TH.data(v.1.1-2)</em>, <em>e1071(v.1.7-13)</em>,
-<em>libcoin(v.1.0-10)</em>, <em>withr(v.2.5.1)</em>,
-<em>rmarkdown(v.2.25)</em>, <em>httr(v.1.4.7)</em>,
-<em>matrixStats(v.1.0.0)</em>, <em>cellranger(v.1.1.0)</em>,
-<em>zoo(v.1.8-12)</em>, <em>modeltools(v.0.2-23)</em>,
-<em>evaluate(v.0.22)</em>, <em>knitr(v.1.44)</em>,
-<em>lmtest(v.0.9-40)</em>, <em>rlang(v.1.1.1)</em>,
-<em>Rcpp(v.1.0.11)</em>, <em>glue(v.1.6.2)</em>,
-<em>rstudioapi(v.0.15.0)</em>, <em>jsonlite(v.1.8.7)</em>,
-<em>plyr(v.1.8.9)</em>, <em>R6(v.2.5.1)</em> and
-<em>multcompView(v.0.1-9)</em></p>
+<em>tidyselect(v.1.2.0)</em>, <em>Exact(v.3.2)</em>,
+<em>rootSolve(v.1.8.2.4)</em>, <em>libcoin(v.1.0-10)</em>,
+<em>farver(v.2.1.1)</em>, <em>fastmap(v.1.1.1)</em>,
+<em>TH.data(v.1.1-2)</em>, <em>digest(v.0.6.33)</em>,
+<em>timechange(v.0.2.0)</em>, <em>lifecycle(v.1.0.3)</em>,
+<em>multcompView(v.0.1-9)</em>, <em>survival(v.3.5-7)</em>,
+<em>lmom(v.3.0)</em>, <em>compiler(v.4.3.1)</em>,
+<em>rlang(v.1.1.1)</em>, <em>sass(v.0.4.7)</em>,
+<em>tools(v.4.3.1)</em>, <em>utf8(v.1.2.3)</em>, <em>yaml(v.2.3.7)</em>,
+<em>data.table(v.1.14.8)</em>, <em>knitr(v.1.44)</em>,
+<em>labeling(v.0.4.3)</em>, <em>bit(v.4.0.5)</em>,
+<em>plyr(v.1.8.9)</em>, <em>multcomp(v.1.4-25)</em>,
+<em>expm(v.0.999-7)</em>, <em>withr(v.2.5.1)</em>,
+<em>grid(v.4.3.1)</em>, <em>stats4(v.4.3.1)</em>,
+<em>fansi(v.1.0.4)</em>, <em>e1071(v.1.7-13)</em>,
+<em>colorspace(v.2.1-0)</em>, <em>scales(v.1.3.0)</em>,
+<em>MASS(v.7.3-60)</em>, <em>cli(v.3.6.1)</em>,
+<em>mvtnorm(v.1.2-3)</em>, <em>crayon(v.1.5.2)</em>,
+<em>rmarkdown(v.2.25)</em>, <em>generics(v.0.1.3)</em>,
+<em>rstudioapi(v.0.15.0)</em>, <em>httr(v.1.4.7)</em>,
+<em>tzdb(v.0.4.0)</em>, <em>readxl(v.1.4.3)</em>, <em>gld(v.2.6.6)</em>,
+<em>cachem(v.1.0.8)</em>, <em>proxy(v.0.4-27)</em>,
+<em>pander(v.0.6.5)</em>, <em>modeltools(v.0.2-23)</em>,
+<em>splines(v.4.3.1)</em>, <em>parallel(v.4.3.1)</em>,
+<em>cellranger(v.1.1.0)</em>, <em>matrixStats(v.1.0.0)</em>,
+<em>vctrs(v.0.6.3)</em>, <em>boot(v.1.3-28.1)</em>,
+<em>Matrix(v.1.6-3)</em>, <em>sandwich(v.3.0-2)</em>,
+<em>jsonlite(v.1.8.7)</em>, <em>hms(v.1.1.3)</em>,
+<em>bit64(v.4.0.5)</em>, <em>nortest(v.1.0-4)</em>,
+<em>jquerylib(v.0.1.4)</em>, <em>glue(v.1.6.2)</em>,
+<em>codetools(v.0.2-19)</em>, <em>stringi(v.1.7.12)</em>,
+<em>gtable(v.0.3.4)</em>, <em>lmtest(v.0.9-40)</em>,
+<em>munsell(v.0.5.0)</em>, <em>pillar(v.1.9.0)</em>,
+<em>htmltools(v.0.5.5)</em>, <em>R6(v.2.5.1)</em>,
+<em>vroom(v.1.6.4)</em>, <em>evaluate(v.0.22)</em>,
+<em>lattice(v.0.21-9)</em>, <em>bslib(v.0.5.1)</em>,
+<em>class(v.7.3-22)</em>, <em>DescTools(v.0.99.50)</em>,
+<em>Rcpp(v.1.0.11)</em>, <em>nlme(v.3.1-163)</em>,
+<em>mgcv(v.1.9-0)</em>, <em>coin(v.1.4-3)</em>, <em>xfun(v.0.39)</em>,
+<em>zoo(v.1.8-12)</em> and <em>pkgconfig(v.2.0.3)</em></p>
 </div>
 
 
