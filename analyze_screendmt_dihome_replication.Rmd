@@ -8,14 +8,18 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE, include = FALSE)
 library(tidyverse)
 library(magrittr)
+# BiocManager::install("limma")
+library(limma)
+# remotes::install_github("jdreyf/ezlimma")
 library(ezlimma)
+# remotes::install_github("https://github.com/jdreyf/DirectionalMaxPTest/tree/4d94d1be714e8ce193928412354e766d9147da42")
 library(DirectionalMaxPTest)
 library(rcompanion)
 
 zero.pct <- 0.2
 ```
 
-In Matt Lynes' Nature Medicne paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this). We do not need to normalize the lipidomics data, because the abundances are quantified using internal standards.
+In Matt Lynes' Nature Medicine paper, he identified 12,13-diHOME, so to replicate that we only need p<0.05. We test replication of association to BMI for other lipids using ScreenDMT and find 9,10-diHOME also replicates. In our lipidomics processing, we only keep lipids that have at least `r 100*(1-zero.pct)`% non-zeroes in both studies (the results are not sensitive to this).
 
 # Cohort published by Lynes et al. in Nature Medicine
 
@@ -152,7 +156,7 @@ stopifnot(tab.pwys %>% dplyr::filter(Parent_lipid == "Linoleic Acid") %>% dplyr:
 stopifnot(tab.pwys %>% dplyr::filter(Parent_lipid == "Linoleic Acid") %>% dplyr::pull(new_cohort.z) < 0)
 ```
 
-We test each lipid set defined by its parent lipid in Figure 3 for enrichment by testing over-representation of lipids with a replication p-value below 5% using the usual  one-sided Fisher exact test and then adjusting for the number of lipid sets tested using the Benjamini-Hochberg FDR procedure. The table of results is at [lipid_set_enrichment_stats.csv](results/lipid_set_enrichment_stats.csv).
+We test each lipid set defined by its parent lipid in Figure 3 for enrichment by testing over-representation of lipids with a replication p-value below 5% using the usual one-sided Fisher exact test and then adjusting for the number of lipid sets tested using the Benjamini-Hochberg FDR procedure. The table of results is at [lipid_set_enrichment_stats.csv](results/lipid_set_enrichment_stats.csv).
 
 # R session
 ```{r, include=TRUE}
