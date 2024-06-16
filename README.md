@@ -22,4 +22,4 @@ Data, analysis code, and results from Dreyfuss et al. (2024).
 2. Install and load necessary R packages, including ours such as `DirectionalMaxPTest`.
 	+ If asked "Do you want to install from sources the package which needs compilation?" say "no".
 3. You can execute the R code in this file in blocks, or you can execute the entire file, including text, to produce an HTML file of the same name using the R Studio button "Knit". However, this is very slow.
-4. You can see the simulation results for FDR by opening `pwr_fdr_arr_b1000_m1000_mu3.5_logpi1.RDS` or for FWER by opening `pwr_fwer_arr_b1000_m1000_mu3.5_logpi1.RDS` in R studio. These are multidimensional arrays that store all simulation results. These reults are plotting in the simulations_screendmt.Rmd chunk `ggplot` in the `Plots` section.
+4. You can see the simulation results for FDR by opening `pwr_fdr_arr_b1000_m1000_mu3.5_logpi1.RDS` or for FWER by opening `pwr_fwer_arr_b1000_m1000_mu3.5_logpi1.RDS` in R studio. These are multidimensional arrays that store all simulation results. These reults are plotted in the simulations_screendmt.Rmd chunk `ggplot` in the `Plots` section.
