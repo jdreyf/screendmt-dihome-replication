@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11843923.svg)](https://doi.org/10.5281/zenodo.11843923)
+
 # screendmt-dihome-replication
 Data, analysis code, and results from Dreyfuss et al. (2024).
 
