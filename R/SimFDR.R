@@ -2,12 +2,12 @@
 #
 #  Args:
 #   mu... positive value representing the SNR of the false hypotheses
-#   pi0... proportion of H_i such that both H_i1 and H_i2 are true
-#   pi1... proportion of H_i such that exactly one of H_i1 and H_i2 is true
-#   pi2... proportion of H_i such that both H_i1 and H_i2 are false
+#   pi0... proportion of null H_i such that both component nulls H_i1 and H_i2 are true
+#   pi1... proportion of null H_i such that exactly one of H_i1 and H_i2 is true
+#   pi2... proportion of null H_i such that both H_i1 and H_i2 are false
 #   alpha... level at which FDR is to be controlled
 #   m...  number of hypotheses
-#   B... the number of Monte Carlo runs
+#   B... the number of simulations
 #   fac... the ratio between the SNR in the two columns of the p-values
 #   sseed... starting seed for reproducibilty
 #   nblocks... number of blocks of analytes that covary
@@ -20,18 +20,18 @@ SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nbl
   stopifnot(abs(pi0+pi1+pi2-1) < 10**-3, meth.v %in% c("JS", "Pearson", "DMT", "ScreenDMT", "radjust_sym", "AF", "repfdr"),
             m %% nblocks == 0)
   
-  # uses zeallot
+  # uses zeallot; mu's are means of stats
   c(mu1, mu2) %<-% sim_mu_vctrs(m=m, fac=fac, pi0=pi0, pi1=pi1, pi2=pi2)
 
   # adafilter block diagonal Sigma w/ b blocks & rho = 0.5
   sigma.tmp <- matrix(rho, ncol=m/nblocks, nrow=m/nblocks) + diag(rep(1-rho, m/nblocks))
   Sigma <- kronecker(X=diag(x = nblocks), Y=sigma.tmp)
   
-  # true and false hypotheses
+  # true and false null hypotheses
   TH <- mu1*mu2 <= 0
   FH <- !TH
   
-  # results matrix
+  # results matrix for power and false discovery proportion
   power <- FDP <- matrix(NA, ncol = length(meth.v), nrow = B)
   colnames(FDP) <- colnames(power) <- meth.v
   
@@ -41,6 +41,7 @@ SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nbl
   colnames(bh.mat) <- meth.v
   
   set.seed(sseed)
+  # Loop through simulations that each generate a dataset
   for (i in 1:B){
     if (i%%100 == 0) print(i)
     if (rho == 0){
@@ -52,6 +53,7 @@ SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nbl
     }
     stopifnot(length(x1) == m, length(x2) == m)
     
+    # for Pearson method
     p.left.mat <- cbind(pnorm(x1, lower.tail=TRUE), pnorm(x2, lower.tail=TRUE))
     p.right.mat <- cbind(pnorm(x1, lower.tail=FALSE), pnorm(x2, lower.tail=FALSE))
     
@@ -76,7 +78,6 @@ SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nbl
       bh.mat[, "DMT"] <- p.adjust(lm.p, method="BH")
     }
     
-    # hitman2
     if ("ScreenDMT" %in% meth.v){
       tab.hm2 <- screendmt(tab = data.frame(x1, p1, x2, p2), p.adj.rate = "FDR")
       bh.mat[, "ScreenDMT"] <- tab.hm2$FDR

@@ -1,5 +1,4 @@
 # Simulate vector of means
-
 sim_mu_vctrs <- function(m, fac, pi0, pi1, pi2){
   # true parameters
   m0 <- round(m*(pi0))
@@ -14,6 +13,7 @@ sim_mu_vctrs <- function(m, fac, pi0, pi1, pi2){
   # randomly allocate m0, m1, & m2 rows
   mu1 <- mu2 <- numeric(m)
   
+  # idx = index
   m1.idx <- sample(x=m, size=m1)
   m2.idx <- sample(x=m, size=m2)
   
