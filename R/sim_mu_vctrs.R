@@ -1,5 +1,5 @@
 # Simulate vector of means
-sim_mu_vctrs <- function(m, fac, pi0, pi1, pi2){
+sim_mu_vctrs <- function(m, fac, pi0, pi1, pi2, mu){
   # true parameters
   m0 <- round(m*(pi0))
   m1 <- round(m*(pi1))
