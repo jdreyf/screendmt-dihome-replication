@@ -20,7 +20,8 @@ SimFWER <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nb
   stopifnot(abs(pi0+pi1+pi2-1) < 10**-3, meth.v %in% c("Pearson", "DMT", "ScreenDMT", "radjust_sym", "AF"),
             m %% nblocks == 0)
   
-  c(mu1, mu2) %<-% sim_mu_vctrs(m=m, fac=fac, pi0=pi0, pi1=pi1, pi2=pi2)
+  # uses zeallot; mu's are means of stats
+  c(mu1, mu2) %<-% sim_mu_vctrs(m=m, fac=fac, pi0=pi0, pi1=pi1, pi2=pi2, mu=mu)
   
   # adafilter block diagonal Sigma w/ b blocks & rho = 0.5
   sigma.tmp <- matrix(rho, ncol=m/nblocks, nrow=m/nblocks) + diag(rep(1-rho, m/nblocks))

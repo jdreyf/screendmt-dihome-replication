@@ -1,5 +1,5 @@
 ---
-title: "Simulation power + FDR/FWER of novel method"
+title: "Simulate power + FDR/FWER of ScreenDMT vs. other methods"
 date: "`r Sys.Date()`"
 output: html_document
 ---

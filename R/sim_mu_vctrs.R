@@ -11,11 +11,13 @@ sim_mu_vctrs <- function(m, fac, pi0, pi1, pi2, mu){
   if (fac != 1) mu <- 2*mu/(1+fac)
   
   # randomly allocate m0, m1, & m2 rows
+  # mu1 is vector of means for study 1, mu2 is vector of means for study 2
   mu1 <- mu2 <- numeric(m)
   
   # idx = index
   m1.idx <- sample(x=m, size=m1)
-  m2.idx <- sample(x=m, size=m2)
+  # make sure m1 metabolites don't overlap m2 metabolites
+  m2.idx <- sample(x=setdiff(1:m, m1.idx), size=m2)
   
   mu1[c(m1.idx, m2.idx)] <- sample(x=c(-mu, mu), size = m1+m2, replace = TRUE)
   
