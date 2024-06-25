@@ -20,6 +20,7 @@ SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nbl
   stopifnot(abs(pi0+pi1+pi2-1) < 10**-3, meth.v %in% c("JS", "Pearson", "DMT", "ScreenDMT", "radjust_sym", "AF", "repfdr"),
             m %% nblocks == 0)
   
+  set.seed(sseed)
   # uses zeallot; mu's are means of stats
   c(mu1, mu2) %<-% sim_mu_vctrs(m=m, fac=fac, pi0=pi0, pi1=pi1, pi2=pi2, mu=mu)
 
@@ -40,7 +41,6 @@ SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nbl
   bh.mat <- matrix(NA, nrow=m, ncol=length(meth.v))
   colnames(bh.mat) <- meth.v
   
-  set.seed(sseed)
   # Loop through simulations that each generate a dataset
   for (i in 1:B){
     if (i%%100 == 0) print(i)
