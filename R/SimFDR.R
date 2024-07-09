@@ -12,10 +12,9 @@
 #   sseed... starting seed for reproducibilty
 #   nblocks... number of blocks of analytes that covary
 #   rho... correlation of analytes within blocks
-#   em.max.iter... max number of EM iterations in repFdr
 #   meth.v... Vector of method names
 
-SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nblocks = 10, rho=0.5, em.max.iter=10^3,
+SimFDR <- function(mu, pi0, pi1, pi2, alpha, m, B = 100, fac=1, sseed = 123, nblocks = 10, rho=0.5,
                    meth.v=c("JS", "Pearson", "DMT", "ScreenDMT", "radjust_sym", "AF")){
   stopifnot(abs(pi0+pi1+pi2-1) < 10**-3, meth.v %in% c("JS", "Pearson", "DMT", "ScreenDMT", "radjust_sym", "AF", "repfdr"),
             m %% nblocks == 0)
