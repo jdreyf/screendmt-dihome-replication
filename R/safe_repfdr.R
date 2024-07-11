@@ -1,5 +1,6 @@
 
 safe_repfdr <- function(x1, x2){
+  # If the number of z-scores per study is small, we set n.bins < 120 (default), approx square root of the number of z-scores
   # fewer bins to avoid warning: glm.fit: fitted rates numerically 0 occurred
   # also number of bins here used for 3 statuses, instead of the usual 2
   nbins <- floor( sqrt(length(x1))/2 )
